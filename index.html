@@ -304,15 +304,6 @@ footer .replay:hover{color:var(--green)}
       </details>
     </div>
     <div class="log-item">
-      <span class="log-date">2026-11-15</span>
-      <details><summary>SoftFx (QA-задание): Python-клиент REST-стенда HSM</summary>
-        <p class="log-more">Отправка значений сенсоров через REST API: argparse-CLI, TLS со self-signed сертификатом,
-        batch-запросы. Привычка «сначала логи» дала побочный продукт — отчёт с 4 замечаниями к их API
-        (HTTP 500/400 на строковые коды типов, недокументированные обязательные поля).
-        Репозиторий: github.com/Kerarty/hsm-qa-scripts</p>
-      </details>
-    </div>
-    <div class="log-item">
       <span class="log-date">2026-11-19</span>
       <details><summary>отклик на «Python-разработчик (ИИ-агенты)» · ИП Жук</summary>
         <p class="log-more">Этот репозиторий. Досье собрано агентами по правилам из AGENTS.md,
@@ -364,19 +355,7 @@ footer .replay:hover{color:var(--green)}
       <div class="links"><span class="chip">конфиг — покажу файлами в Telegram</span></div>
     </div>
     <div class="card">
-      <h3><span class="num">04</span>hsm-qa-scripts</h3>
-      <p class="tag">Python: клиент REST API для QA-стенда SoftFx</p>
-      <ul>
-        <li>argparse-CLI: --url / --key / --product-path, TLS-проверка опциональна</li>
-        <li>Сенсоры double/bool/string + batch-запрос list</li>
-        <li>Из логов прогона — 4 замечания к API: HTTP 500/400 на строковые коды типов, «опциональные» поля, падающие без них</li>
-      </ul>
-      <div class="links">
-        <a class="chip" href="https://github.com/Kerarty/hsm-qa-scripts" target="_blank" rel="noopener">репо ↗</a>
-      </div>
-    </div>
-    <div class="card">
-      <h3><span class="num">05</span>playble-ads SDK</h3>
+      <h3><span class="num">04</span>playble-ads SDK</h3>
       <p class="tag">TypeScript-монорепо: движко-независимый SDK playable-рекламы</p>
       <ul>
         <li>Адаптеры под основные рекламные сети (MRAID)</li>
@@ -389,7 +368,7 @@ footer .replay:hover{color:var(--green)}
       </div>
     </div>
     <div class="card">
-      <h3><span class="num">06</span>Echoloop</h3>
+      <h3><span class="num">05</span>Echoloop</h3>
       <p class="tag">Головоломка о времени: Unity 6 + URP, C#</p>
       <ul>
         <li>Петля времени, эхо прошлых проходов, 8 уровней</li>
@@ -496,7 +475,7 @@ footer .replay:hover{color:var(--green)}
     </div>
     <div class="fit-row">
       <span class="fit-req">«Сначала смотреть в логи»</span>
-      <span class="fit-ev">4 бага API SoftFx найдены из логов прогона и оформлены отдельным отчётом, а не «где-то падает»</span>
+      <span class="fit-ev">Отчёт модерации CrazyGames разобран по пунктам: реальный rejection превратился в список доработок, а не «где-то падает»</span>
       <span class="st y">✓ сейчас</span>
     </div>
     <div class="fit-row">
