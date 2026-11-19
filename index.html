@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ярослав Кукар — Python-разработчик (ИИ-агенты) · резюме-харнес</title>
+<meta name="description" content="Досье собирает агент у HR на глазах: 20 играбельных резюме за 6 недель, игра на трёх площадках, 49 субагентов и 107 скиллов собственного харнеса. БГУИР 2023–2027, Минск.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d1117'/%3E%3Crect x='3' y='3' width='26' height='26' rx='4' fill='none' stroke='%233fb950' stroke-width='2'/%3E%3Cpath d='M8 11l5 5-5 5M16 21h8' stroke='%233fb950' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0d1117; --panel:#10161d; --panel2:#161b22; --line:#21262d; --line2:#30363d;
+  --text:#e6edf3; --muted:#8b949e; --green:#3fb950; --amber:#d29922; --blue:#58a6ff;
+  --red:#f85149; --chip:#21262d;
+  --mono:ui-monospace,'Cascadia Mono','JetBrains Mono',Consolas,'Segoe UI Mono',monospace;
+  --sans:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:900px;margin:0 auto;padding:0 20px}
+.mono{font-family:var(--mono)}
+
+/* ── Харнес-оверлей (сессия сборки) ───────────────────────── */
+#harness{display:none}
+.js #harness{
+  display:flex;position:fixed;inset:0;z-index:50;background:var(--bg);
+  align-items:center;justify-content:center;padding:18px;
+  opacity:1;transition:opacity .5s ease;
+}
+#harness.done{opacity:0;pointer-events:none}
+.term{
+  width:100%;max-width:760px;background:var(--panel);border:1px solid var(--line2);
+  border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.55);
+}
+.term-bar{display:flex;align-items:center;gap:8px;background:var(--panel2);border-bottom:1px solid var(--line);padding:9px 14px}
+.term-dot{width:11px;height:11px;border-radius:50%;background:var(--line2)}
+.term-dot.r{background:#f66} .term-dot.y{background:#daa333} .term-dot.g{background:#4cbb6c}
+.term-title{font-family:var(--mono);font-size:12px;color:var(--muted);margin-left:6px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.term-skip{font-family:var(--mono);font-size:12px;color:var(--green);background:none;border:1px solid var(--line2);border-radius:6px;padding:3px 10px;cursor:pointer;white-space:nowrap}
+.term-skip:hover{border-color:var(--green)}
+.term-body{font-family:var(--mono);font-size:13.5px;line-height:1.75;padding:16px 16px 20px;min-height:280px;color:var(--text)}
+.tl{white-space:pre-wrap;word-break:break-word;min-height:1.75em}
+.tl.cmd{color:var(--text)}
+.tl.cmd::before{content:'$ ';color:var(--muted)}
+.tl.ok{color:var(--muted)}
+.tl.ok::before{content:'✓ ';color:var(--green)}
+.tl.work{color:var(--text)}
+.tl.work::before{content:'● ';color:var(--amber)}
+.tl.done-line{color:var(--green)}
+.tl .spin{color:var(--amber);display:inline-block;width:1em}
+.tl-time{color:var(--line2);font-size:11px;margin-top:10px}
+
+/* ── Шапка досье ──────────────────────────────────────────── */
+header{padding:42px 0 8px;border-bottom:1px solid var(--line)}
+.h-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-size:clamp(26px,4.5vw,34px);font-weight:700;letter-spacing:-.02em}
+.vac-chip{font-family:var(--mono);font-size:11.5px;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:3px 11px;white-space:nowrap}
+.role{color:var(--green);font-family:var(--mono);font-size:14px;margin-top:6px}
+.edu{color:var(--muted);font-size:14px;margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{
+  font-family:var(--mono);font-size:12.5px;color:var(--text);background:var(--chip);
+  border:1px solid var(--line2);border-radius:8px;padding:5px 12px;display:inline-flex;align-items:center;gap:7px;
+}
+.chip:hover{border-color:var(--blue);text-decoration:none}
+.chip .ic{color:var(--green)}
+.hero{
+  margin:20px 0 22px;font-size:16.5px;color:var(--text);border-left:3px solid var(--green);
+  padding:2px 0 2px 16px;max-width:70ch;
+}
+.hero b{color:var(--green);font-weight:600}
+
+/* ── Вкладки ──────────────────────────────────────────────── */
+nav{position:sticky;top:0;z-index:5;background:rgba(13,17,23,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  font-family:var(--mono);font-size:13px;color:var(--muted);background:none;border:none;
+  border-bottom:2px solid transparent;padding:12px 13px 10px;cursor:pointer;white-space:nowrap;
+}
+.tab:hover{color:var(--text)}
+.tab[aria-selected="true"]{color:var(--text);border-bottom-color:var(--green)}
+
+/* ── Секции ───────────────────────────────────────────────── */
+section{padding:30px 0 14px;display:none}
+section.open{display:block}
+h2{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:400;letter-spacing:.06em;text-transform:uppercase;margin-bottom:18px}
+h2::before{content:'$ ';color:var(--green)}
+
+/* Лог */
+.log{border-left:1px solid var(--line2);margin-left:6px}
+.log-item{position:relative;padding:0 0 6px 18px}
+.log-item::before{content:'';position:absolute;left:-4px;top:9px;width:7px;height:7px;border-radius:50%;background:var(--green)}
+.log-date{font-family:var(--mono);font-size:12px;color:var(--amber)}
+.log-item details{margin-top:2px}
+.log-item summary{cursor:pointer;list-style:none;color:var(--text);font-size:15.5px}
+.log-item summary::-webkit-details-marker{display:none}
+.log-item summary::before{content:'▸';color:var(--muted);margin-right:8px;display:inline-block;transition:transform .15s}
+.log-item details[open] summary::before{transform:rotate(90deg)}
+.log-item summary:hover{color:var(--blue)}
+.log-more{color:var(--muted);font-size:14px;padding:6px 0 4px 24px;max-width:68ch}
+
+/* Проекты */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:9px}
+.card h3{font-size:16px;font-weight:600}
+.card h3 .num{color:var(--muted);font-family:var(--mono);font-size:12px;font-weight:400;margin-right:8px}
+.card .tag{font-size:13.5px;color:var(--muted)}
+.card ul{list-style:none;display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:var(--text)}
+.card li::before{content:'·';color:var(--green);margin-right:8px;font-weight:700}
+.card .links{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.card .links .chip{font-size:11.5px;padding:3px 9px;border-radius:6px}
+
+/* Харнес */
+.quote{
+  background:var(--panel);border:1px solid var(--line2);border-left:3px solid var(--green);
+  border-radius:8px;padding:16px 18px;font-size:15px;max-width:76ch;position:relative;
+}
+.quote .q-label{font-family:var(--mono);font-size:11.5px;color:var(--muted);display:block;margin-bottom:9px}
+.copy-btn{
+  margin-top:12px;font-family:var(--mono);font-size:12.5px;color:var(--green);background:none;
+  border:1px solid var(--line2);border-radius:6px;padding:6px 14px;cursor:pointer;
+}
+.copy-btn:hover{border-color:var(--green)}
+.copy-btn.copied{color:var(--bg);background:var(--green);border-color:var(--green)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:20px 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+.stat b{font-family:var(--mono);font-size:24px;color:var(--green);display:block;font-weight:600}
+.stat span{font-size:12.5px;color:var(--muted)}
+.chips-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chips-grid .p{font-family:var(--mono);font-size:11.5px;color:var(--text);background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.chips-grid .p:hover{border-color:var(--green)}
+.sub{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:22px}
+.sub::before{content:'## ';color:var(--line2)}
+.note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.rules{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:12px;max-width:74ch}
+.rules li{font-size:14.5px;padding-left:2px}
+.rules li::before{content:'hook · ';font-family:var(--mono);color:var(--amber);font-size:12.5px}
+
+/* Под вакансию */
+.legend{display:flex;gap:14px;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-bottom:16px;flex-wrap:wrap}
+.legend i{font-style:normal;margin-right:5px}
+.fit{display:flex;flex-direction:column}
+.fit-row{display:grid;grid-template-columns:1fr;gap:4px;padding:12px 0;border-bottom:1px solid var(--line)}
+@media(min-width:640px){.fit-row{grid-template-columns:minmax(200px,32%) 1fr auto;gap:14px;align-items:baseline}}
+.fit-req{font-size:14.5px;font-weight:600}
+.fit-ev{font-size:13.5px;color:var(--muted);max-width:52ch}
+.st{font-family:var(--mono);font-size:11.5px;border-radius:999px;padding:3px 10px;white-space:nowrap;justify-self:start}
+.st.y{color:var(--green);border:1px solid rgba(63,185,80,.4)}
+.st.p{color:var(--amber);border:1px solid rgba(210,153,34,.4)}
+.st.n{color:var(--muted);border:1px solid var(--line2)}
+
+/* Честно / План */
+.plain{list-style:none;display:flex;flex-direction:column;gap:13px;max-width:74ch}
+.plain li{font-size:15px;padding-left:20px;position:relative;color:var(--text)}
+.plain li::before{content:'[i]';font-family:var(--mono);color:var(--blue);position:absolute;left:0;font-size:12.5px;top:3px}
+.plain.warn li::before{content:'[!]';color:var(--amber)}
+.plain b{font-weight:600}
+.plan{display:flex;flex-direction:column;gap:14px;max-width:74ch}
+.plan-block{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:15px 17px}
+.plan-block h3{font-family:var(--mono);font-size:14px;color:var(--green);margin-bottom:8px;font-weight:600}
+.plan-block ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.plan-block li{font-size:14px;color:var(--text);padding-left:16px;position:relative}
+.plan-block li::before{content:'→';color:var(--muted);position:absolute;left:0;font-size:12px}
+
+/* Контакты */
+.contact-big{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:6px}
+.c-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:block}
+.c-card:hover{border-color:var(--green);text-decoration:none}
+.c-card .k{font-family:var(--mono);font-size:11.5px;color:var(--muted);display:block;margin-bottom:6px}
+.c-card .v{font-family:var(--mono);font-size:14.5px;color:var(--text)}
+.c-card .v .ic{color:var(--green)}
+.c-note{font-size:13.5px;color:var(--muted);margin-top:14px;max-width:70ch}
+
+footer{border-top:1px solid var(--line);margin-top:34px;padding:20px 0 34px}
+footer .f-line{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}
+footer .replay{font-family:var(--mono);font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;padding:0}
+footer .replay:hover{color:var(--green)}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  #harness{transition:none}
+  .log-item summary::before{transition:none}
+}
+@media print{
+  #harness,nav,.copy-btn,.replay{display:none!important}
+  body{background:#fff;color:#000;font-size:12px}
+  .wrap{max-width:none}
+  section{display:block!important;page-break-inside:avoid;padding:10px 0}
+  header{border-color:#ccc}
+  .chip,.card,.stat,.plan-block,.quote,.c-card{background:#fff;border-color:#bbb;color:#000}
+  .chips-grid .p{background:#eee;color:#000;border-color:#bbb}
+  a{color:#000}
+  h1,.role,.hero b{color:#000}
+  .role{color:#333}
+  .stat b,.card li::before,.st.y{color:#0a6b1e}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ Оверлей: агент собирает досье (показывается только с JS) ═══ -->
+<div id="harness" role="status" aria-live="polite" aria-label="Сессия сборки досье агентом">
+  <div class="term">
+    <div class="term-bar">
+      <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+      <span class="term-title">harness · сборка отклика · github.com/Kerarty/cv-zhuk</span>
+      <button class="term-skip" id="skipBtn" type="button">сразу к досье →</button>
+    </div>
+    <div class="term-body" id="termBody"></div>
+  </div>
+</div>
+
+<!-- ═══ Досье ═══ -->
+<div class="wrap">
+
+<header>
+  <div class="h-top">
+    <h1>Ярослав Кукар</h1>
+    <span class="vac-chip">отклик · vacancy 139562400 · ИП Жук</span>
+  </div>
+  <p class="role">Python-разработчик · работа с ИИ-агентами</p>
+  <p class="edu">Минск · 4 курс БГУИР — «Информационные системы и технологии в игровой индустрии», 2023–2027 · инженер-программист</p>
+  <div class="chips">
+    <a class="chip" href="https://github.com/Kerarty" target="_blank" rel="noopener"><span class="ic">⌥</span>github.com/Kerarty</a>
+    <a class="chip" href="https://t.me/Kerarty" target="_blank" rel="noopener"><span class="ic">✈</span>t.me/Kerarty</a>
+    <a class="chip" href="mailto:kukar.yar@gmail.com"><span class="ic">@</span>kukar.yar@gmail.com</a>
+  </div>
+  <p class="hero">
+    Собираю продукты <b>агентным конвейером</b>: собственный харнес — 49 субагентов, 107 скиллов,
+    хуки факт-чека. За 6 недель — <b>20 интерактивных резюме-игр</b> и законченная игра на
+    Яндекс.Играх, CrazyGames и itch.io. Ревью агентного кода — моя ежедневная практика:
+    я стою над конвейером как техлид, а не как оператор.
+  </p>
+</header>
+
+<nav>
+  <div class="tabs" role="tablist" aria-label="Разделы досье">
+    <button class="tab" role="tab" id="tab-log" aria-controls="log" aria-selected="true">$ лог опыта</button>
+    <button class="tab" role="tab" id="tab-projects" aria-controls="projects" aria-selected="false">проекты</button>
+    <button class="tab" role="tab" id="tab-harness" aria-controls="harness-tab" aria-selected="false">харнес</button>
+    <button class="tab" role="tab" id="tab-fit" aria-controls="fit" aria-selected="false">под вакансию</button>
+    <button class="tab" role="tab" id="tab-honest" aria-controls="honest" aria-selected="false">честно</button>
+    <button class="tab" role="tab" id="tab-plan" aria-controls="plan" aria-selected="false">план 30-60-90</button>
+    <button class="tab" role="tab" id="tab-contact" aria-controls="contact" aria-selected="false">контакты</button>
+  </div>
+</nav>
+
+<!-- ЛОГ -->
+<section id="log" class="open" role="tabpanel" aria-labelledby="tab-log">
+  <h2>git log --oneline career/</h2>
+  <div class="log">
+    <div class="log-item">
+      <span class="log-date">2023 → 2027</span>
+      <details><summary>БГУИР: фундамент</summary>
+        <p class="log-more">«Информационные системы и технологии в игровой индустрии», бакалавриат, 4-й курс.
+        Алгоритмы, ООП, базы данных, проектирование ИС — база, на которую конвейер опирается каждый день.</p>
+      </details>
+    </div>
+    <div class="log-item">
+      <span class="log-date">2026-10</span>
+      <details><summary>старт агентного конвейера: первые играбельные проекты</summary>
+        <p class="log-more">Задача — не «писать код руками», а управлять потоком: идея → промпт → ревью диффа → тесты → прод.
+        Первые сборки: играбельные резюме-игры, SDK playable-рекламы, сайты.</p>
+      </details>
+    </div>
+    <div class="log-item">
+      <span class="log-date">2026-10-05</span>
+      <details><summary>Echoloop — Unity 6 + URP (C#)</summary>
+        <p class="log-more">Головоломка о времени: петля, эхо прошлых проходов. 8 уровней, 26 автотестов проходимости.
+        Репозиторий: github.com/Kerarty/echoloop-playble</p>
+      </details>
+    </div>
+    <div class="log-item">
+      <span class="log-date">2026-10</span>
+      <details><summary>12 играбельных резюме-игр за месяц + два сайта</summary>
+        <p class="log-more">Каждое — под конкретную компанию и её игры: платформер, босс-файт, экономика merge-автобатлера,
+        тюнер лайвопс-событий, досье в стилистике студии. Каждый проект — самодостаточный HTML без рантайм-зависимостей.
+        Плюс прототипы сайтов барбершопа и автохимии для заказчиков из Светлогорска.</p>
+      </details>
+    </div>
+    <div class="log-item">
+      <span class="log-date">2026-11</span>
+      <details><summary>ещё 8 резюме → итог: 20 интерактивных досье за 6 недель</summary>
+        <p class="log-more">Смартфон с мини-играми, пошаговая тактика, карта-экспедиция, слот с бонусом,
+        IT-management портфолио на React 19, резюме-инцидент для поддержки. Разная механика — один конвейер.</p>
+      </details>
+    </div>
+    <div class="log-item">
+      <span class="log-date">2026-11-15</span>
+      <details><summary>Проходная — первая законченная игра, прод на 3 площадках</summary>
+        <p class="log-more">Казуальный «инспектор-сим»: TypeScript + PixiJS. Деплой: Яндекс.Игры, CrazyGames, itch.io.
+        WebRTC-дуэли P2P без игрового сервера, процедурная смена по сиду с юнит-тестами инвариантов,
+        25 правил в 5 тирах, 7 языков, топ-50 на лёгком сигналинг-сервере. 49 коммитов за 4 дня.</p>
+      </details>
+    </div>
+    <div class="log-item">
+      <span class="log-date">2026-11-15</span>
+      <details><summary>SoftFx (QA-задание): Python-клиент REST-стенда HSM</summary>
+        <p class="log-more">Отправка значений сенсоров через REST API: argparse-CLI, TLS со self-signed сертификатом,
+        batch-запросы. Привычка «сначала логи» дала побочный продукт — отчёт с 4 замечаниями к их API
+        (HTTP 500/400 на строковые коды типов, недокументированные обязательные поля).
+        Репозиторий: github.com/Kerarty/hsm-qa-scripts</p>
+      </details>
+    </div>
+    <div class="log-item">
+      <span class="log-date">2026-11-19</span>
+      <details><summary>отклик на «Python-разработчик (ИИ-агенты)» · ИП Жук</summary>
+        <p class="log-more">Этот репозиторий. Досье собрано агентами по правилам из AGENTS.md,
+        факт-чек прошёл по всем цифрам — источники: публичный GitHub и конфиг харнеса.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ПРОЕКТЫ -->
+<section id="projects" role="tabpanel" aria-labelledby="tab-projects">
+  <h2>проекты — все доведены до рабочего состояния</h2>
+  <div class="cards">
+    <div class="card">
+      <h3><span class="num">01</span>Проходная</h3>
+      <p class="tag">Законченная игра в проде: TypeScript + PixiJS, деплой на 3 площадки</p>
+      <ul>
+        <li>Яндекс.Игры, CrazyGames, itch.io — одна сборка, реальные игроки</li>
+        <li>Дуэли в реальном времени: WebRTC P2P, без игрового сервера</li>
+        <li>Процедурная смена по сиду: mulberry32, юнит-тесты инвариантов на сотнях сидов</li>
+        <li>25 правил в 5 тирах, 7 языков, топ-50 на сигналинг-сервере</li>
+      </ul>
+      <div class="links">
+        <a class="chip" href="https://kerarty.github.io/prohodnaya/" target="_blank" rel="noopener">играть ↗</a>
+        <a class="chip" href="https://github.com/Kerarty/prohodnaya" target="_blank" rel="noopener">репо ↗</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="num">02</span>Агентный конвейер резюме</h3>
+      <p class="tag">20 играбельных досье за 6 недель — поток «идея → прод за дни»</p>
+      <ul>
+        <li>12 в октябре + 8 в ноябре, каждое — под компанию и её игры</li>
+        <li>Каждый проект — один самодостаточный HTML, 0 сетевых запросов в рантайме</li>
+        <li>Канон конвейера: «HR нельзя проиграть» — skip-режим, noscript, print-стили</li>
+      </ul>
+      <div class="links">
+        <a class="chip" href="https://github.com/Kerarty" target="_blank" rel="noopener">все репо ↗</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="num">03</span>Свой харнес агентов</h3>
+      <p class="tag">Виртуальная студия: 49 субагентов, 107 скиллов, правила и хуки</p>
+      <ul>
+        <li>Субагенты полного цикла: продюсер, арт-директор, геймдизайнер, engine-programmer, qa-lead, release-manager…</li>
+        <li>Скиллы процесса: brainstorm → architecture → dev-story → code-review → launch</li>
+        <li>Хуки факт-чека: числовой факт не проходит без проверяемого источника</li>
+      </ul>
+      <div class="links"><span class="chip">конфиг — покажу файлами в Telegram</span></div>
+    </div>
+    <div class="card">
+      <h3><span class="num">04</span>hsm-qa-scripts</h3>
+      <p class="tag">Python: клиент REST API для QA-стенда SoftFx</p>
+      <ul>
+        <li>argparse-CLI: --url / --key / --product-path, TLS-проверка опциональна</li>
+        <li>Сенсоры double/bool/string + batch-запрос list</li>
+        <li>Из логов прогона — 4 замечания к API: HTTP 500/400 на строковые коды типов, «опциональные» поля, падающие без них</li>
+      </ul>
+      <div class="links">
+        <a class="chip" href="https://github.com/Kerarty/hsm-qa-scripts" target="_blank" rel="noopener">репо ↗</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="num">05</span>playble-ads SDK</h3>
+      <p class="tag">TypeScript-монорепо: движко-независимый SDK playable-рекламы</p>
+      <ul>
+        <li>Адаптеры под основные рекламные сети (MRAID)</li>
+        <li>Доказательства сборкой: Splash Kitty — 684 КБ один файл, MOB RUSH — 472 КБ, 0 сетевых запросов</li>
+        <li>Процедурный арт и звук — бюджет и вес контролируются кодом</li>
+      </ul>
+      <div class="links">
+        <a class="chip" href="https://github.com/Kerarty/playble-ads" target="_blank" rel="noopener">репо ↗</a>
+        <a class="chip" href="https://kerarty.github.io/splash-kitty-playable-ad/" target="_blank" rel="noopener">демо ↗</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="num">06</span>Echoloop</h3>
+      <p class="tag">Головоломка о времени: Unity 6 + URP, C#</p>
+      <ul>
+        <li>Петля времени, эхо прошлых проходов, 8 уровней</li>
+        <li>26 автотестов проходимости — логика уровня проверяется кодом</li>
+      </ul>
+      <div class="links">
+        <a class="chip" href="https://github.com/Kerarty/echoloop-playble" target="_blank" rel="noopener">репо ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ХАРНЕС -->
+<section id="harness-tab" role="tabpanel" aria-labelledby="tab-harness">
+  <h2>харнес — как я работаю с агентами</h2>
+  <blockquote class="quote">
+    <span class="q-label">// готовый абзац для отклика — по требованиям вакансии</span>
+    Основные инструменты — ZCode CLI (GLM) и Claude Code. Почти весь мой портфолио за последние
+    два с половиной месяца написан агентами: 20 интерактивных резюме-игр и игра в проде на трёх
+    площадках. Над конвейером я стою как техлид: ревьюю каждый дифф, веду правила и хуки, держу
+    49 субагентов и 107 скиллов. Последнее изменение конвейера: добавил субагента-ревьюера в цепочку
+    сборки и ужесточил хуки факт-чека — числовые факты не проходят без проверяемого источника.
+    <button class="copy-btn" id="copyQuote" type="button">⧉ скопировать абзац</button>
+  </blockquote>
+
+  <div class="stats">
+    <div class="stat"><b>49</b><span>субагентов — виртуальная студия</span></div>
+    <div class="stat"><b>107</b><span>скиллов полного цикла</span></div>
+    <div class="stat"><b>20</b><span>репо резюме за 6 недель</span></div>
+    <div class="stat"><b>3</b><span>площадки — игра в проде</span></div>
+  </div>
+
+  <p class="sub">Субагенты (49)</p>
+  <div class="chips-grid" id="agentChips">
+    <span class="p">producer</span><span class="p">game-designer</span><span class="p">gameplay-programmer</span>
+    <span class="p">engine-programmer</span><span class="p">art-director</span><span class="p">creative-director</span>
+    <span class="p">narrative-director</span><span class="p">level-designer</span><span class="p">systems-designer</span>
+    <span class="p">economy-designer</span><span class="p">live-ops-designer</span><span class="p">audio-director</span>
+    <span class="p">sound-designer</span><span class="p">technical-director</span><span class="p">technical-artist</span>
+    <span class="p">ui-programmer</span><span class="p">ux-designer</span><span class="p">network-programmer</span>
+    <span class="p">tools-programmer</span><span class="p">ai-programmer</span><span class="p">lead-programmer</span>
+    <span class="p">performance-analyst</span><span class="p">qa-lead</span><span class="p">qa-tester</span>
+    <span class="p">release-manager</span><span class="p">devops-engineer</span><span class="p">security-engineer</span>
+    <span class="p">localization-lead</span><span class="p">analytics-engineer</span><span class="p">community-manager</span>
+    <span class="p">world-builder</span><span class="p">writer</span><span class="p">prototyper</span>
+    <span class="p">unity-specialist</span><span class="p">unity-ui-specialist</span><span class="p">unity-dots-specialist</span>
+    <span class="p">unity-shader-specialist</span><span class="p">unity-addressables-specialist</span>
+    <span class="p">unreal-specialist</span><span class="p">ue-blueprint-specialist</span><span class="p">ue-gas-specialist</span>
+    <span class="p">ue-replication-specialist</span><span class="p">ue-umg-specialist</span>
+    <span class="p">godot-specialist</span><span class="p">godot-gdscript-specialist</span><span class="p">godot-csharp-specialist</span>
+    <span class="p">godot-shader-specialist</span><span class="p">godot-gdextension-specialist</span>
+    <span class="p">accessibility-specialist</span>
+  </div>
+
+  <p class="sub">Скиллы (107) — примеры процесса</p>
+  <div class="chips-grid">
+    <span class="p">brainstorm</span><span class="p">create-architecture</span><span class="p">create-epics</span>
+    <span class="p">create-stories</span><span class="p">dev-story</span><span class="p">estimate</span>
+    <span class="p">sprint-plan</span><span class="p">code-review</span><span class="p">design-review</span>
+    <span class="p">gate-check</span><span class="p">milestone-review</span><span class="p">retrospective</span>
+    <span class="p">qa-plan</span><span class="p">regression-suite</span><span class="p">test-flakiness</span>
+    <span class="p">bug-report</span><span class="p">bug-triage</span><span class="p">diagnosing-bugs</span>
+    <span class="p">perf-profile</span><span class="p">tech-debt</span><span class="p">hotfix</span>
+    <span class="p">day-one-patch</span><span class="p">launch-checklist</span><span class="p">release-checklist</span>
+    <span class="p">balance-check</span><span class="p">playtest-report</span><span class="p">vertical-slice</span>
+    <span class="p">prototype</span><span class="p">scope-check</span><span class="p">art-bible</span>
+    <span class="p">asset-spec</span><span class="p">localize</span><span class="p">patch-notes</span>
+  </div>
+  <p class="note">полный список из 107 — файлами в Telegram; дубликаты двух библиотек вычтены, число честное</p>
+
+  <p class="sub">Правила и хуки, которые я держу в конвейере</p>
+  <ul class="rules">
+    <li>факт-чек перед коммитом: каждое число имеет проверяемый источник</li>
+    <li>о проблемах сообщаем сразу, коротко, без ожидания ревью</li>
+    <li>сначала смотрим в логи — потом строим догадки</li>
+    <li>одна правка = один коммит; стиль сообщений единый</li>
+    <li>ревью диффа агента — всегда человеком; агент не мёржит сам</li>
+  </ul>
+</section>
+
+<!-- ПОД ВАКАНСИЮ -->
+<section id="fit" role="tabpanel" aria-labelledby="tab-fit">
+  <h2>map: требования вакансии → мои доказательства</h2>
+  <div class="legend">
+    <span><i class="st y">✓</i>есть сейчас</span>
+    <span><i class="st p">◐</i>частично</span>
+    <span><i class="st n">○</i>план 30-60-90</span>
+  </div>
+  <div class="fit">
+    <div class="fit-row">
+      <span class="fit-req">Ревью кода, написанного агентом <span class="mono" style="color:var(--green)">← ключевое</span></span>
+      <span class="fit-ev">6 недель ежедневного ревью диффов агентов: 20+ репо собраны конвейером, каждый коммит проходит человеческое ревью</span>
+      <span class="st y">✓ сейчас</span>
+    </div>
+    <div class="fit-row">
+      <span class="fit-req">Хуки, скиллы, субагенты, правила</span>
+      <span class="fit-ev">49 субагентов, 107 скиллов, хуки факт-чека, AGENTS.md с правилами — в этом же репозитории</span>
+      <span class="st y">✓ сейчас</span>
+    </div>
+    <div class="fit-row">
+      <span class="fit-req">Самостоятельность: без спринтов и тимлида</span>
+      <span class="fit-ev">Соло-режим с самого старта: сам ставлю задачи, сам довожу до прод-состояния, коммуникация коротко</span>
+      <span class="st y">✓ сейчас</span>
+    </div>
+    <div class="fit-row">
+      <span class="fit-req">«Сначала смотреть в логи»</span>
+      <span class="fit-ev">4 бага API SoftFx найдены из логов прогона и оформлены отдельным отчётом, а не «где-то падает»</span>
+      <span class="st y">✓ сейчас</span>
+    </div>
+    <div class="fit-row">
+      <span class="fit-req">React/TypeScript админка</span>
+      <span class="fit-ev">React 19 + TypeScript + Vite: IT-management портфолио CV_Aston; 477 КБ TS-кода в Проходной</span>
+      <span class="st y">✓ сейчас</span>
+    </div>
+    <div class="fit-row">
+      <span class="fit-req">Git, доведение до прод-состояния</span>
+      <span class="fit-ev">Конвейер: репозиторий → сборка → GitHub Pages → модерация площадок → правки по фидбеку. Коммиты — ежедневная норма</span>
+      <span class="st y">✓ сейчас</span>
+    </div>
+    <div class="fit-row">
+      <span class="fit-req">Python 3.13</span>
+      <span class="fit-ev">Уверенно: скрипты и REST-клиенты (argparse, TLS, batch), build-скрипты конвейера. Прод-разработки на Python пока нет — расту в него целенаправленно</span>
+      <span class="st p">◐ частично</span>
+    </div>
+    <div class="fit-row">
+      <span class="fit-req">Асинхронный код</span>
+      <span class="fit-ev">Ежедневная практика async/await — в TypeScript: WebRTC P2P, сигналинг-сервер. Асинхронный Python — план 30 дней</span>
+      <span class="st p">◐ частично</span>
+    </div>
+    <div class="fit-row">
+      <span class="fit-req">DDD, Clean Code, SOLID, рефакторинг</span>
+      <span class="fit-ev">Изоляция гейм-логики от платформенных SDK, юнит-тесты инвариантов, рефакторинг по замечаниям модерации площадок. В формализованном виде — хочу набить на вашем коде</span>
+      <span class="st p">◐ частично</span>
+    </div>
+    <div class="fit-row">
+      <span class="fit-req">systemd, nginx, Prometheus, Grafana, GitLab</span>
+      <span class="fit-ev">База: GitHub Actions CI, деплои Pages, локальный стенд в Docker. Целевое — набить руку на вашей инфраструктуре в первые 60 дней</span>
+      <span class="st p">◐ частично</span>
+    </div>
+    <div class="fit-row">
+      <span class="fit-req">FastAPI, asyncio, MySQL, RabbitMQ, Redis</span>
+      <span class="fit-ev">SQL и проектирование БД — из программы БГУИР. FastAPI/Redis — первым пет-проектом за 30 дней; RabbitMQ — 60-90</span>
+      <span class="st n">○ план</span>
+    </div>
+    <div class="fit-row">
+      <span class="fit-req">Офис в Минске (Уручье)</span>
+      <span class="fit-ev">Минск, офис — ок. 4-й курс, вечерние пары сочетаются с дневным графиком</span>
+      <span class="st y">✓ ок</span>
+    </div>
+  </div>
+</section>
+
+<!-- ЧЕСТНО -->
+<section id="honest" role="tabpanel" aria-labelledby="tab-honest">
+  <h2>честно — чего у меня пока нет</h2>
+  <ul class="plain warn">
+    <li><b>Коммерческого опыта разработки нет</b> — 4-й курс, диплом в 2027. Взамен: 6 недель ежедневных
+    прод-сборок с внешней проверкой качества (модерация площадок, QA-инструменты, фидбек игроков).</li>
+    <li><b>Python — уровень «скрипты и REST-клиенты»</b>. FastAPI в бою не трогал — возьму его первым же
+    проектом на новом месте, конвейер для ускорения уже готов.</li>
+    <li><b>MySQL — база из учёбы</b>; RabbitMQ и Redis не трогал. Чтение планов запросов — научусь на ваших данных.</li>
+    <li><b>Инфраструктура systemd/nginx/Prometheus</b> — поверхностное представление. Глубокую практику получу
+    в первые месяцы на вашей системе.</li>
+    <li><b>DDD в формальном виде не применял</b> — но изоляцию домена от платформы и тесты на инвариантах
+    уже держу в пет-проектах.</li>
+  </ul>
+  <ul class="plain" style="margin-top:18px">
+    <li><b>Что сильное сразу:</b> ревью агентного кода — ежедневная практика, конвейерная сборка,
+    доведение до прод-состояния, скорость (2 игры + SDK + 20 резюме за 2,5 месяца).</li>
+    <li><b>Как закрываю разрыв:</b> пет-сервис FastAPI+Redis до конца испытательного срока —
+    на том же стеке, что у вас, чтобы вход был быстрым.</li>
+  </ul>
+</section>
+
+<!-- ПЛАН -->
+<section id="plan" role="tabpanel" aria-labelledby="tab-plan">
+  <h2>план 30-60-90 — что сделаю у вас</h2>
+  <div class="plan">
+    <div class="plan-block">
+      <h3>30 дней</h3>
+      <ul>
+        <li>первая задача до прода: логика выбора поставщика, интеграция API, админка или алерты</li>
+        <li>пет-сервис FastAPI + asyncio + Redis — полигон стека вакансии, чтобы вход был быстрым</li>
+        <li>влиться в ваш харнес: прочитать правила, хуки, научиться их дорабатывать</li>
+      </ul>
+    </div>
+    <div class="plan-block">
+      <h3>60 дней</h3>
+      <ul>
+        <li>MySQL: чтение планов запросов на реальных данных, оптимизация</li>
+        <li>внести в ваш харнес ревью-гайд для агентного кода — из моей 6-недельной практики</li>
+        <li>самостоятельно закрывать задачи от постановки до алертов в Grafana</li>
+      </ul>
+    </div>
+    <div class="plan-block">
+      <h3>90 дней</h3>
+      <ul>
+        <li>вести собственный проект целиком — как обещает вакансия</li>
+        <li>конвейер агентов выведен на ваш стандарт: правила → ревью → прод, без потерянных задач</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- КОНТАКТЫ -->
+<section id="contact" role="tabpanel" aria-labelledby="tab-contact">
+  <h2>контакты — коммуникация как у вас принято</h2>
+  <div class="contact-big">
+    <a class="c-card" href="https://t.me/Kerarty" target="_blank" rel="noopener">
+      <span class="k">telegram — основной канал</span>
+      <span class="v"><span class="ic">✈</span> t.me/Kerarty</span>
+    </a>
+    <a class="c-card" href="https://github.com/Kerarty" target="_blank" rel="noopener">
+      <span class="k">github — все источники фактов</span>
+      <span class="v"><span class="ic">⌥</span> github.com/Kerarty</span>
+    </a>
+    <a class="c-card" href="mailto:kukar.yar@gmail.com">
+      <span class="k">email</span>
+      <span class="v"><span class="ic">@</span> kukar.yar@gmail.com</span>
+    </a>
+  </div>
+  <p class="c-note">Минск, на связь отвечаю быстро, коротко и по делу — без созвонов, если не нужны.
+  О проблемах сообщаю сразу, как только вижу, а не к дедлайну.</p>
+</section>
+
+<footer>
+  <div class="f-line">
+    <span>досье собрано агентами · правила: AGENTS.md в репо</span>
+    <span>факт-чек: github.com/Kerarty</span>
+    <a href="https://rabota.by/vacancy/139562400?hhtmFrom=vacancy_search_list" target="_blank" rel="noopener">вакансия ↗</a>
+    <button class="replay" id="replayBtn" type="button">↺ проиграть сборку заново</button>
+  </div>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+document.documentElement.classList.add('js');
+/* Правки и правила этого репозитория — в AGENTS.md. Одна правка = один коммит. */
+</script>
+
+</body>
+</html>
