@@ -6,6 +6,12 @@
 <title>Ярослав Кукар — Python-разработчик (ИИ-агенты) · резюме-харнес</title>
 <meta name="description" content="Досье собирает агент у HR на глазах: 20 играбельных резюме за 6 недель, игра на трёх площадках, 49 субагентов и 107 скиллов собственного харнеса. БГУИР 2023–2027, Минск.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d1117'/%3E%3Crect x='3' y='3' width='26' height='26' rx='4' fill='none' stroke='%233fb950' stroke-width='2'/%3E%3Cpath d='M8 11l5 5-5 5M16 21h8' stroke='%233fb950' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<noscript><style>
+#harness{display:none!important}
+nav{display:none}
+section{display:block!important;padding:22px 0 8px}
+h2{margin-top:14px}
+</style></noscript>
 <style>
 :root{
   --bg:#0d1117; --panel:#10161d; --panel2:#161b22; --line:#21262d; --line2:#30363d;
@@ -31,7 +37,8 @@ a:hover{text-decoration:underline}
 }
 #harness.done{opacity:0;pointer-events:none}
 .term{
-  width:100%;max-width:760px;background:var(--panel);border:1px solid var(--line2);
+  width:100%;max-width:760px;max-height:92vh;display:flex;flex-direction:column;
+  background:var(--panel);border:1px solid var(--line2);
   border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.55);
 }
 .term-bar{display:flex;align-items:center;gap:8px;background:var(--panel2);border-bottom:1px solid var(--line);padding:9px 14px}
@@ -40,16 +47,17 @@ a:hover{text-decoration:underline}
 .term-title{font-family:var(--mono);font-size:12px;color:var(--muted);margin-left:6px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .term-skip{font-family:var(--mono);font-size:12px;color:var(--green);background:none;border:1px solid var(--line2);border-radius:6px;padding:3px 10px;cursor:pointer;white-space:nowrap}
 .term-skip:hover{border-color:var(--green)}
-.term-body{font-family:var(--mono);font-size:13.5px;line-height:1.75;padding:16px 16px 20px;min-height:280px;color:var(--text)}
+.term-body{font-family:var(--mono);font-size:13.5px;line-height:1.75;padding:16px 16px 20px;min-height:280px;color:var(--text);overflow-y:auto}
 .tl{white-space:pre-wrap;word-break:break-word;min-height:1.75em}
 .tl.cmd{color:var(--text)}
 .tl.cmd::before{content:'$ ';color:var(--muted)}
 .tl.ok{color:var(--muted)}
 .tl.ok::before{content:'✓ ';color:var(--green)}
 .tl.work{color:var(--text)}
-.tl.work::before{content:'● ';color:var(--amber)}
+.tl.work::before{content:none}
+.tl .spin{color:var(--amber);display:inline-block;width:1.1em}
 .tl.done-line{color:var(--green)}
-.tl .spin{color:var(--amber);display:inline-block;width:1em}
+.tl.done-line::before{content:'✓ '}
 .tl-time{color:var(--line2);font-size:11px;margin-top:10px}
 
 /* ── Шапка досье ──────────────────────────────────────────── */
@@ -621,6 +629,182 @@ footer .replay:hover{color:var(--green)}
 <script>
 document.documentElement.classList.add('js');
 /* Правки и правила этого репозитория — в AGENTS.md. Одна правка = один коммит. */
+(function(){
+'use strict';
+
+/* ── состояние ── */
+var overlay = document.getElementById('harness');
+var body = document.getElementById('termBody');
+var skipBtn = document.getElementById('skipBtn');
+var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var SKIP_KEY = 'cv-zhuk-skip';
+var docMode = (location.hash || '').toLowerCase() === '#doc' ||
+  (location.search.indexOf('doc=') > -1 || location.search === '?doc');
+
+/* ── вкладки ── */
+var SECTIONS = { log:'log', projects:'projects', harness:'harness-tab', fit:'fit', honest:'honest', plan:'plan', contact:'contact' };
+
+function activate(name, noHash){
+  Object.keys(SECTIONS).forEach(function(k){
+    var sec = document.getElementById(SECTIONS[k]);
+    var btn = document.getElementById('tab-' + k);
+    if(!sec || !btn) return;
+    var on = (k === name);
+    sec.classList.toggle('open', on);
+    btn.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  if(!noHash && history.replaceState) history.replaceState(null, '', '#' + name);
+}
+
+Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){
+  t.addEventListener('click', function(){
+    var n = (t.getAttribute('aria-controls') === 'harness-tab') ? 'harness' : t.getAttribute('aria-controls');
+    activate(n);
+  });
+});
+
+window.addEventListener('hashchange', function(){
+  var n = location.hash.replace('#', '');
+  if(SECTIONS[n]) activate(n, true);
+});
+
+var initial = location.hash.replace('#', '');
+if(SECTIONS[initial]) activate(initial, true);
+
+/* ── копирование абзаца отклика ── */
+var copyBtn = document.getElementById('copyQuote');
+if(copyBtn){
+  copyBtn.addEventListener('click', function(){
+    var quoteEl = copyBtn.closest('.quote');
+    var clone = quoteEl.cloneNode(true);
+    Array.prototype.forEach.call(clone.querySelectorAll('.copy-btn,.q-label'), function(el){ el.remove(); });
+    var text = clone.textContent.replace(/\s+/g, ' ').trim();
+    function ok(){
+      copyBtn.classList.add('copied');
+      copyBtn.textContent = '✓ скопировано';
+      setTimeout(function(){
+        copyBtn.classList.remove('copied');
+        copyBtn.textContent = '⧉ скопировать абзац';
+      }, 2200);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(ok, function(){ fallback(text, ok); });
+    } else { fallback(text, ok); }
+    function fallback(t, cb){
+      var ta = document.createElement('textarea');
+      ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); cb(); }catch(e){}
+      document.body.removeChild(ta);
+    }
+  });
+}
+
+/* ── харнес-сессия ── */
+var SESS = [
+  { c:'cmd',  t:'zcode --task "собрать отклик: Python-разработчик (ИИ-агенты) · ИП Жук"' },
+  { c:'work', t:'читаю правила · AGENTS.md',                                            ok:'правила загружены · факт-чек включён' },
+  { c:'work', t:'hook pre-commit: сверка фактов с github.com/Kerarty',                  ok:'20 резюме-репо · 1 игра на 3 площадках · 49 субагентов · 107 скиллов' },
+  { c:'work', t:'субагент resume-writer: собирает секции',                              ok:'7 вкладок готовы' },
+  { c:'work', t:'субагент reviewer: ревьюит диффы',                                     ok:'замечаний: 0' },
+  { c:'done', t:'досье собрано · репозиторий: github.com/Kerarty/cv-zhuk' }
+];
+var SPIN = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
+var timers = [], intervals = [];
+
+function clearAll(){
+  timers.forEach(clearTimeout); intervals.forEach(clearInterval);
+  timers = []; intervals = [];
+}
+function addLine(cls, text){
+  var el = document.createElement('div');
+  el.className = 'tl ' + cls;
+  el.textContent = text;
+  body.appendChild(el);
+  return el;
+}
+function spin(el){
+  var s = document.createElement('span');
+  s.className = 'spin';
+  el.textContent = '';
+  el.appendChild(s);
+  var i = 0;
+  var iv = setInterval(function(){ s.textContent = SPIN[i++ % SPIN.length]; }, 70);
+  intervals.push(iv);
+  return iv;
+}
+function finish(){
+  clearAll();
+  if(overlay.classList.contains('done')) return;
+  overlay.classList.add('done');
+  setTimeout(function(){ overlay.style.display = 'none'; }, reduced ? 0 : 550);
+}
+function skip(){
+  try{ localStorage.setItem(SKIP_KEY, '1'); }catch(e){}
+  finish();
+}
+function runSession(){
+  clearAll();
+  body.innerHTML = '';
+  overlay.classList.remove('done');
+  overlay.style.display = '';
+  var t0 = Date.now();
+  if(reduced){
+    SESS.forEach(function(l){ addLine(l.c, l.c === 'work' ? l.ok : l.t); });
+    finish();
+    return;
+  }
+  var t = 0;
+  SESS.forEach(function(l){
+    if(l.c === 'cmd'){
+      timers.push(setTimeout(function(){ addLine('cmd', l.t); }, t));
+      t += 430;
+    } else if(l.c === 'work'){
+      var dur = 540 + Math.floor(Math.random() * 430);
+      (function(start, line, d){
+        timers.push(setTimeout(function(){
+          var el = addLine('work', '');
+          spin(el);
+        }, start));
+        timers.push(setTimeout(function(){
+          intervals.forEach(clearInterval); intervals = [];
+          addLine('ok', line.ok);
+        }, start + d));
+      })(t, l, dur);
+      t += dur + 240;
+    } else {
+      timers.push(setTimeout(function(){
+        addLine('done-line', l.t.replace('{t}', ((Date.now() - t0) / 1000).toFixed(1) + 'с'));
+        timers.push(setTimeout(finish, 950));
+      }, t));
+      t += 320;
+    }
+  });
+}
+skipBtn.addEventListener('click', skip);
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && !overlay.classList.contains('done') && overlay.style.display !== 'none') skip();
+});
+
+/* ── повтор сборки ── */
+var replayBtn = document.getElementById('replayBtn');
+if(replayBtn){
+  replayBtn.addEventListener('click', function(){
+    try{ localStorage.removeItem(SKIP_KEY); }catch(e){}
+    window.scrollTo(0, 0);
+    runSession();
+  });
+}
+
+/* ── старт ── */
+var skippedBefore = false;
+try{ skippedBefore = localStorage.getItem(SKIP_KEY) === '1'; }catch(e){}
+if(docMode || skippedBefore){
+  overlay.style.display = 'none';
+} else {
+  try{ runSession(); }catch(e){ finish(); }
+}
+})();
 </script>
 
 </body>
